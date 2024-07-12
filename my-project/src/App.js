@@ -1,6 +1,7 @@
 import medi from './Logo.png';
 import './App.css';
 
+
 function App() {
   return (
     <div>
@@ -27,9 +28,26 @@ function App() {
             <p>
               With our chatbot, you're <b>never alone.</b> Feel the confidence of knowing help is just a message away. Get ready to experience the future of crisis management!
             </p>
-            
+
             <br className="py-5"></br>
-            <button className="btn btn-primary">Chat With Us!</button>
+            {/* Open the modal using document.getElementById('ID').showModal() method */}
+            <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_5').showModal()}>Chat With Us!</button>
+            <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+              <div className="modal-box">
+                <h3 className="font-bold text-lg">Please Record your problem</h3>
+                <p className="py-4">Click Submit for our model to diagnose your problem, an alert will show up if we have called 911 on you're behalf</p>
+                <div className="modal-action">
+                  <article class="clip">
+                    <audio controls></audio>
+                  </article>
+
+                  <form method="dialog">
+                    <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg">Submit</button>
+                  </form>
+                </div>
+              </div>
+            </dialog>
+
           </div>
         </div>
       </div>
@@ -37,5 +55,7 @@ function App() {
 
   );
 }
+
+
 
 export default App;
