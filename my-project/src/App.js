@@ -1,4 +1,4 @@
-import medi from './medihacks.png';
+import medi from './Logo.png';
 import './App.css';
 
 function App() {
