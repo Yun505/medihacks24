@@ -1,6 +1,174 @@
+import React, { useState, useEffect } from 'react';
+import { useReactMediaRecorder } from "react-media-recorder";
 import medi from './Logo.png';
 import './App.css';
 
+const RecordView = () => {
+  const [second, setSecond] = useState("00");
+  const [minute, setMinute] = useState("00");
+  const [isActive, setIsActive] = useState(false);
+  const [counter, setCounter] = useState(0);
+  const [downloadUrl, setDownloadUrl] = useState(null);
+
+  useEffect(() => {
+    let intervalId;
+
+    if (isActive) {
+      intervalId = setInterval(() => {
+        const secondCounter = counter % 60;
+        const minuteCounter = Math.floor(counter / 60);
+
+        let computedSecond =
+          String(secondCounter).length === 1
+            ? `0${secondCounter}`
+            : secondCounter;
+        let computedMinute =
+          String(minuteCounter).length === 1
+            ? `0${minuteCounter}`
+            : minuteCounter;
+
+        setSecond(computedSecond);
+        setMinute(computedMinute);
+
+        setCounter((counter) => counter + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isActive, counter]);
+
+  function stopTimer() {
+    setIsActive(false);
+    setCounter(0);
+    setSecond("00");
+    setMinute("00");
+  }
+
+  const {
+    status,
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    mediaBlobUrl
+  } = useReactMediaRecorder({
+    video: false,
+    audio: true,
+    echoCancellation: true
+  });
+
+  useEffect(() => {
+    if (mediaBlobUrl) {
+      setDownloadUrl(mediaBlobUrl);
+    }
+  }, [mediaBlobUrl]);
+
+  const handleStopRecording = () => {
+    stopRecording();
+    pauseRecording();
+    stopTimer();
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          border: "1px solid black",
+          backgroundColor: "black",
+          width: "100%",
+          height: "350px",
+          padding: "10px",
+          boxSizing: "border-box"
+        }}
+      >
+        <div style={{ backgroundColor: "black", color: "white", textAlign: "center", marginTop: "10px" }}>
+          <button
+            style={{
+              backgroundColor: "black",
+              borderRadius: "8px",
+              color: "white",
+              padding: "5px 10px",
+              marginBottom: "10px"
+            }}
+            onClick={stopTimer}
+          >
+            Clear
+          </button>
+          <div style={{ fontSize: "54px" }}>
+            <span className="minute">{minute}</span>
+            <span>:</span>
+            <span className="second">{second}</span>
+          </div>
+
+          <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
+            <button
+              style={{
+                padding: "0.8rem 2rem",
+                border: "none",
+                margin: "0 15px",
+                fontSize: "1rem",
+                cursor: "pointer",
+                borderRadius: "5px",
+                fontWeight: "bold",
+                backgroundColor: isActive ? "#df3636" : "#42b72a",
+                color: "white",
+                transition: "all 300ms ease-in-out",
+                transform: "translateY(0)"
+              }}
+              onClick={() => {
+                if (!isActive) {
+                  startRecording();
+                } else {
+                  pauseRecording();
+                }
+                setIsActive(!isActive);
+              }}
+            >
+              {isActive ? "Pause" : "Start"}
+            </button>
+            <button
+              style={{
+                padding: "0.8rem 2rem",
+                border: "none",
+                backgroundColor: "#df3636",
+                marginLeft: "15px",
+                fontSize: "1rem",
+                cursor: "pointer",
+                color: "white",
+                borderRadius: "5px",
+                fontWeight: "bold",
+                transition: "all 300ms ease-in-out",
+                transform: "translateY(0)"
+              }}
+              onClick={handleStopRecording}
+            >
+              Stop
+            </button>
+          </div>
+
+          {downloadUrl && (
+            <a
+              href={downloadUrl}
+              download={`recording_${minute}_${second}.mp3`}
+              style={{
+                padding: "0.8rem 2rem",
+                border: "none",
+                backgroundColor: "#4CAF50",
+                color: "white",
+                borderRadius: "5px",
+                fontWeight: "bold",
+                textDecoration: "none",
+                display: "inline-block",
+                marginTop: "15px"
+              }}
+            >
+              Download Recording
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   return (
@@ -12,14 +180,16 @@ function App() {
         <div className="hero-content flex-col lg:flex-row-reverse">
           <img
             src={medi}
-            className="max-w-sm rounded-lg shadow-2xl" />
+            className="max-w-sm rounded-lg shadow-2xl"
+            alt="Logo"
+          />
           <div>
-            <br className=""></br>
+            <br />
             <h1 className="text-5xl font-bold text-error">Emergency Dispatch Detection</h1>
-            <br className="py-9"></br>
+            <br className="py-9" />
             <h1 className="text-2xl text-base-400 font-bold">Meet Your Lifesaving Chatbot!</h1>
-            <br className="py-3"></br>
-            <p >
+            <br className="py-3" />
+            <p>
               Introducing our <b>cutting-edge chatbot</b>, designed with a powerful Retrieval-Augmented Generation (RAG) layer. This isn't just any chatbot – it's your <u>personal crisis responder</u>, ready to jump into action at a moment's notice.
             </p>
             <p>
@@ -28,34 +198,27 @@ function App() {
             <p>
               With our chatbot, you're <b>never alone.</b> Feel the confidence of knowing help is just a message away. Get ready to experience the future of crisis management!
             </p>
-
-            <br className="py-5"></br>
-            {/* Open the modal using document.getElementById('ID').showModal() method */}
-            <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_5').showModal()}>Chat With Us!</button>
+            <br className="py-5" />
+            <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_5').showModal()}>
+              Chat With Us!
+            </button>
             <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
               <div className="modal-box">
                 <h3 className="font-bold text-lg">Please Record your problem</h3>
-                <p className="py-4">Click Submit for our model to diagnose your problem, an alert will show up if we have called 911 on you're behalf</p>
+                <p className="py-4">Click Submit for our model to diagnose your problem, an alert will show up if we have called 911 on your behalf</p>
                 <div className="modal-action">
-                  <article class="clip">
-                    <audio controls></audio>
-                  </article>
-
+                  <RecordView />
                   <form method="dialog">
-                    <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg">Submit</button>
+                    <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg">Close</button>
                   </form>
                 </div>
               </div>
             </dialog>
-
           </div>
         </div>
       </div>
     </div>
-
   );
 }
-
-
 
 export default App;
