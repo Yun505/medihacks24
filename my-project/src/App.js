@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useReactMediaRecorder } from "react-media-recorder";
 import medi from './Logo.png';
 import './App.css';
@@ -9,6 +10,8 @@ const RecordView = () => {
   const [isActive, setIsActive] = useState(false);
   const [counter, setCounter] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState(null);
+  const [userInput, setUserInput] = useState("");
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     let intervalId;
@@ -66,6 +69,23 @@ const RecordView = () => {
     stopRecording();
     pauseRecording();
     stopTimer();
+  };
+
+  const handleInputChange = (event) => {
+    setUserInput(event.target.value);
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/talk', {
+        user_input: userInput,
+      });
+      setMessages([...messages, { sender: 'user', text: userInput }, { sender: 'bot', text: response.data.messages }]);
+      setUserInput("");  // Clear input after submission
+    } catch (error) {
+      console.error("Error sending the message:", error);
+    }
   };
 
   return (
@@ -165,6 +185,42 @@ const RecordView = () => {
             </a>
           )}
         </div>
+      </div>
+
+      <form onSubmit={handleFormSubmit} style={{ marginTop: "20px", textAlign: "center", display: 'flex', justifyContent: 'center' }}>
+        <input
+          type="text"
+          value={userInput}
+          onChange={handleInputChange}
+          placeholder="Type your message"
+          style={{
+            padding: "10px",
+            borderRadius: "5px 0 0 5px",
+            border: "1px solid #ccc",
+            width: "300px"
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: "10px 20px",
+            borderRadius: "0 5px 5px 0",
+            border: "none",
+            backgroundColor: "#42b72a",
+            color: "white",
+            cursor: "pointer"
+          }}
+        >
+          Send
+        </button>
+      </form>
+
+      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        {messages.map((message, index) => (
+          <p key={index} style={{ color: message.sender === 'user' ? 'blue' : 'green' }}>
+            {message.text}
+          </p>
+        ))}
       </div>
     </div>
   );
